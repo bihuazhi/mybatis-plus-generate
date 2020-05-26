@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
+	
+	<!-- 加载数据库资源文件 -->
+	<context:property-placeholder location="classpath:db.properties" />
+ 	
+ 	<!-- c3p0数据源的配置 -->
+ 	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" >
+ 		<property name="user" value="${jdbc.username}"></property>
+ 		<property name="password" value="${jdbc.password}"></property>
+ 		<property name="driverClass" value="${jdbc.driver}"></property>
+ 		<property name="jdbcUrl" value="${jdbc.url}"></property>
+ 	</bean>
+ 	
+ 	<!-- 事务管理器 -->
+ 	<bean id="dataSourceTransactionManager" 
+ 	class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+ 		<property name="dataSource" ref="dataSource" ></property>
+ 	</bean>
+ 	
+ 	<!-- 基于注解的事务管理 -->
+	<tx:annotation-driven  transaction-manager="dataSourceTransactionManager"/>
+	
+	<!-- mybatis整合  需要替换成mybatis-plus提供的SqlSession --> 
+	<bean id="sqlSessionFactoryBean" class="com.baomidou.mybatisplus.spring.MybatisSqlSessionFactoryBean">
+				<!--数据源  -->
+			<property name="dataSource" ref="dataSource" ></property>
+			<!--加载配置文件  -->
+			<property name="configLocation" value="classpath:mybatis.cfg.xml"></property>
+			<!-- 配置包别名 -->
+			<property name="typeAliasesPackage" value="cn.thxy.domain"></property>
+		
+			<!-- 注入mybatis-plus 的全局配置 -->
+			<property name="globalConfig" ref="globalConfiguration"></property>
+	</bean>
+	
+	<!-- 配置扫描mapper的路径 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="cn.thxy.mapper" ></property>
+	</bean>
+	
+	<!--  定义mybatis-plus 全局策略的配置-->
+	<bean id="globalConfiguration" class="com.baomidou.mybatisplus.entity.GlobalConfiguration">
+			<!-- 2.3版本之后 dbColumnUnderline 默认值为true-->
+			<property name="dbColumnUnderline" value="false"></property>
+			<!-- 设置全局的id生成策略 -->
+			<property name="idType" value="0"></property>
+			<!-- 设置表名的前缀-->
+			<property name="tablePrefix" value="tbl_"></property>
+	</bean>
+</beans>
